@@ -1,0 +1,46 @@
+{
+  "levels": [
+    {
+      "id": "level_one",
+      "name": "Getting Started",
+      "grid": "#####\n#@$.#\n#####",
+      "isBuiltIn": true
+    },
+    {
+      "id": "level_two",
+      "name": "The Hallway",
+      "grid": "#######\n#.@$$.#\n#######",
+      "isBuiltIn": true
+    },
+    {
+      "id": "level_three",
+      "name": "First Challenge",
+      "grid": "#####\n#@  #\n# $ #\n# . #\n#####",
+      "isBuiltIn": true
+    },
+    {
+      "id": "level_four",
+      "name": "Two Boxes",
+      "grid": "######\n#    #\n#@$$ #\n# .. #\n######",
+      "isBuiltIn": true
+    },
+    {
+      "id": "level_five",
+      "name": "Box Puzzle",
+      "grid": "#######\n#     #\n#@$ $ #\n# . . #\n#######",
+      "isBuiltIn": true
+    },
+    {
+      "id": "level_six",
+      "name": "Narrow Path",
+      "grid": "########\n#@     #\n# $$$  #\n#  ... #\n########",
+      "isBuiltIn": true
+    },
+    {
+      "id": "level_seven",
+      "name": "Small Room",
+      "grid": "########\n#  .   #\n#  $   #\n# @$   #\n#  .   #\n########",
+      "isBuiltIn": true
+    }
+  ]
+}
