@@ -1,0 +1,21 @@
+# Build files
+bin/
+obj/
+
+# VS Code settings
+.vscode/
+
+# Mac files
+.DS_Store
+
+# User files
+*.user
+*.suo
+.vs/
+
+# NuGet files
+packages/
+*.nupkg
+
+# Logs
+*.log
