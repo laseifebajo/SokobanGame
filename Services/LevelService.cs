@@ -5,8 +5,8 @@ namespace SokobanGame.Services
 {
     public class LevelService
     {
-        // Link to where the built-in levels are stored online
-        private const string LevelsUrl = "https://raw.githubusercontent.com/laseifebajo/SokobanGame/refs/heads/main/levels/levels.json";
+        // Heres the link to where the levels are
+        private const string LevelsUrl = "https://raw.githubusercontent.com/laseifebajo/SokobanGame/main/Levels/levels.json";
 
         private readonly PersistenceService _persistence;
 

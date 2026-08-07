@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SokobanGame.Views.SettingsPage"
+             BackgroundColor="{AppThemeBinding Light=White, Dark=#1a1a2e}">
+
+    <VerticalStackLayout Padding="20" Spacing="25">
+
+        <Label Text="Settings" FontSize="28" FontAttributes="Bold"
+               TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
+
+        <!-- Dark Mode -->
+        <Border BackgroundColor="{AppThemeBinding Light=#f5f5f5, Dark=#2c3e50}"
+                StrokeShape="RoundRectangle 12" Padding="15" Stroke="Transparent">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0" Text="Dark Mode" VerticalOptions="Center"
+                       FontSize="16"
+                       TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
+                <Switch Grid.Column="1" x:Name="ThemeSwitch" Toggled="OnThemeToggled"/>
+            </Grid>
+        </Border>
+
+        <!-- Sound -->
+        <Border BackgroundColor="{AppThemeBinding Light=#f5f5f5, Dark=#2c3e50}"
+                StrokeShape="RoundRectangle 12" Padding="15" Stroke="Transparent">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0" Text="Sound Effects" VerticalOptions="Center"
+                       FontSize="16"
+                       TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
+                <Switch Grid.Column="1" x:Name="SoundSwitch" Toggled="OnSoundToggled"/>
+            </Grid>
+        </Border>
+
+        <!-- Grid Colour -->
+        <Border BackgroundColor="{AppThemeBinding Light=#f5f5f5, Dark=#2c3e50}"
+                StrokeShape="RoundRectangle 12" Padding="15" Stroke="Transparent">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Grid Colour Scheme" FontSize="16"
+                       TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
+                <Picker x:Name="ColourPicker" SelectedIndexChanged="OnColourChanged">
+                    <Picker.Items>
+                        <x:String>Blue</x:String>
+                        <x:String>Green</x:String>
+                        <x:String>Purple</x:String>
+                        <x:String>Desert</x:String>
+                    </Picker.Items>
+                </Picker>
+            </VerticalStackLayout>
+        </Border>
+
+        <Button Text="← Back" Clicked="OnBackClicked"
+                HorizontalOptions="Start"
+                BackgroundColor="#3498db" TextColor="White"
+                WidthRequest="120" CornerRadius="20"/>
+
+    </VerticalStackLayout>
+</ContentPage>

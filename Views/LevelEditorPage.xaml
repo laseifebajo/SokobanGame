@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SokobanGame.Views.LevelEditorPage"
+             BackgroundColor="{AppThemeBinding Light=White, Dark=#1a1a2e}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <Label Grid.Row="0" Text="Level Editor" FontSize="24" FontAttributes="Bold"
+               Margin="10"
+               TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
+
+        <!-- Tool Palette -->
+        <HorizontalStackLayout Grid.Row="1" Spacing="5" Padding="5"
+                               HorizontalOptions="Center">
+            <Button x:Name="WallBtn" Text="#" WidthRequest="50" HeightRequest="50"
+                    BackgroundColor="DarkSlateGray" TextColor="White"
+                    Clicked="ToolSelected" CommandParameter="#"/>
+            <Button x:Name="FloorBtn" Text="□" WidthRequest="50" HeightRequest="50"
+                    BackgroundColor="LightGray"
+                    Clicked="ToolSelected" CommandParameter=" "/>
+            <Button x:Name="PlayerBtn" Text="@" WidthRequest="50" HeightRequest="50"
+                    BackgroundColor="SteelBlue" TextColor="White"
+                    Clicked="ToolSelected" CommandParameter="@"/>
+            <Button x:Name="BoxBtn" Text="$" WidthRequest="50" HeightRequest="50"
+                    BackgroundColor="SaddleBrown" TextColor="White"
+                    Clicked="ToolSelected" CommandParameter="$"/>
+            <Button x:Name="TargetBtn" Text="." WidthRequest="50" HeightRequest="50"
+                    BackgroundColor="LightBlue"
+                    Clicked="ToolSelected" CommandParameter="."/>
+        </HorizontalStackLayout>
+
+        <!-- Editor Grid -->
+        <ScrollView Grid.Row="2">
+            <Grid x:Name="EditorGrid" Margin="10"
+                  HorizontalOptions="Center" VerticalOptions="Start"/>
+        </ScrollView>
+
+        <!-- Bottom buttons -->
+        <HorizontalStackLayout Grid.Row="3" Spacing="10"
+                               HorizontalOptions="Center" Padding="10">
+            <Button Text="Grid Size" Clicked="OnGridSizeClicked"
+                    WidthRequest="110" HeightRequest="45"/>
+            <Button Text="▶ Test" Clicked="OnTestClicked"
+                    WidthRequest="110" HeightRequest="45"
+                    BackgroundColor="Green" TextColor="White"/>
+            <Button x:Name="SaveBtn" Text="💾 Save" Clicked="OnSaveClicked"
+                    WidthRequest="110" HeightRequest="45"
+                    BackgroundColor="Navy" TextColor="White"
+                    IsEnabled="False"/>
+        </HorizontalStackLayout>
+
+    </Grid>
+</ContentPage>
