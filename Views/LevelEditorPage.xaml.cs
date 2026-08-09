@@ -20,6 +20,8 @@ namespace SokobanGame.Views
         // Size of each square in the editor
         private const int CellSize = 40;
 
+        private bool _hasBeenTested = false;
+
         public LevelEditorPage(PersistenceService persistence)
         {
             InitializeComponent();
@@ -170,9 +172,60 @@ namespace SokobanGame.Views
 
         // These features are going to be added later
         private async void OnTestClicked(object sender, EventArgs e)
-            => await DisplayAlertAsync("Coming Soon", "Test feature coming soon!", "OK");
+        {
+            // Validate level has minimum required elements
+            bool hasPlayer = false, hasBox = false, hasTarget = false;
+            for (int r = 0; r < _gridRows; r++)
+                for (int c = 0; c < _gridCols; c++)
+                {
+                    if (_editorGrid[r, c] == '@') hasPlayer = true;
+                    if (_editorGrid[r, c] == '$') hasBox = true;
+                    if (_editorGrid[r, c] == '.') hasTarget = true;
+                }
+
+            if (!hasPlayer || !hasBox || !hasTarget)
+            {
+                await DisplayAlertAsync("Invalid Level",
+                    "Your level needs at least: one player (@), one box ($), one target (.)", "OK");
+                return;
+            }
+
+            // Build the grid string
+            var rows = new List<string>();
+            for (int r = 0; r < _gridRows; r++)
+            {
+                var row = new string(Enumerable.Range(0, _gridCols)
+                    .Select(c => _editorGrid[r, c]).ToArray());
+                rows.Add(row);
+            }
+
+            var testLevel = new SokobanGame.Models.Level
+            {
+                Id = "test_level",
+                Name = "Test Level",
+                Grid = string.Join("\n", rows),
+                IsBuiltIn = false
+            };
+
+            // Navigate to game page with test level
+            var navParam = new Dictionary<string, object> { { "Level", testLevel } };
+            await Shell.Current.GoToAsync("GamePage", navParam);
+
+            // When they return, unlock save
+            _hasBeenTested = true;
+            SaveBtn.IsEnabled = true;
+        }
 
         private async void OnSaveClicked(object sender, EventArgs e)
-            => await DisplayAlertAsync("Coming Soon", "Save feature coming soon!", "OK");
-    }
+        {
+            if (!_hasBeenTested)
+            {
+                await DisplayAlertAsync("Test First",
+                    "You must test the level before saving.", "OK");
+                return;
+            }
+
+            await DisplayAlertAsync("Coming Soon", "Save feature coming in next update!", "OK");
+        }
+            }
 }
