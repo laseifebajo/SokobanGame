@@ -30,53 +30,50 @@ namespace SokobanGame.Views
 
         private async Task LoadLevels()
         {
-            // Get the built-in levels, custom levels and the player's saved progress.
             var levelCollection = await _levelService.GetBuiltInLevelsAsync();
             var customCollection = await _persistence.LoadCustomLevelsAsync();
-            var progress = await _persistence.LoadProgressAsync() ?? new List<LevelProgress>();
+            var progress = await _persistence.LoadProgressAsync() 
+                ?? new List<LevelProgress>();
 
             _items = new List<LevelDisplayItem>();
 
-            // Add all of the built-in levels to the list shown to the player.
+            // Add builtin levls
             foreach (var level in levelCollection.Levels)
             {
-                // Find any saved progress for this particular level.
                 var prog = progress.FirstOrDefault(p => p.LevelId == level.Id);
-
                 _items.Add(new LevelDisplayItem
                 {
                     Level = level,
                     Name = level.Name,
                     IsCompleted = prog?.IsCompleted ?? false,
-                    BestMovesText = prog?.IsCompleted == true ? $"Best: {prog.BestMoves}" : ""
+                    BestMovesText = prog?.IsCompleted == true
+                        ? $"Best: {prog.BestMoves}" : ""
                 });
             }
 
-            // Custom levels are added after the built-in levels.
+            // Added custom levels with a label so the user knows they made them
             if (customCollection != null)
             {
                 foreach (var level in customCollection.Levels)
                 {
-                    // Check if the player has already completed this custom level.
                     var prog = progress.FirstOrDefault(p => p.LevelId == level.Id);
-
                     _items.Add(new LevelDisplayItem
                     {
                         Level = level,
-                        Name = level.Name,
+                        Name = $"⭐ {level.Name}",
                         IsCompleted = prog?.IsCompleted ?? false,
-                        BestMovesText = prog?.IsCompleted == true ? $"Best: {prog.BestMoves}" : ""
+                        BestMovesText = prog?.IsCompleted == true
+                            ? $"Best: {prog.BestMoves}" : ""
                     });
                 }
             }
 
-            // Give the finished list to the CollectionView so it can display the levels.
             LevelsCollection.ItemsSource = _items;
         }
 
         private async void OnLevelSelected(object sender, SelectionChangedEventArgs e)
         {
-            // Make sure the selected item is actually a level before continuing.
+            // Make sure the selected item is actually a level before continuing
             if (e.CurrentSelection.FirstOrDefault() is not LevelDisplayItem item) return;
 
             // Clear the selection so the same level can be selected again later.

@@ -225,7 +225,35 @@ namespace SokobanGame.Views
                 return;
             }
 
-            await DisplayAlertAsync("Coming Soon", "Save feature coming in next update!", "OK");
+            string? name = await DisplayPromptAsync("Save Level",
+                "Enter a name for your level:", initialValue: "My Level");
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            var rows = new List<string>();
+            for (int r = 0; r < _gridRows; r++)
+            {
+                var row = new string(Enumerable.Range(0, _gridCols)
+                    .Select(c => _editorGrid[r, c]).ToArray());
+                rows.Add(row);
+            }
+
+            var newLevel = new SokobanGame.Models.Level
+            {
+                Id = $"custom_{DateTime.Now.Ticks}",
+                Name = name,
+                Grid = string.Join("\n", rows),
+                IsBuiltIn = false
+            };
+
+            var existing = await _persistence.LoadCustomLevelsAsync()
+                ?? new SokobanGame.Models.LevelCollection();
+            existing.Levels.Add(newLevel);
+            await _persistence.SaveCustomLevelsAsync(existing);
+
+            await DisplayAlertAsync("Saved!",
+                $"'{name}' has been saved to your custom levels.", "OK");
+
+            await Shell.Current.GoToAsync("..");
         }
             }
 }
