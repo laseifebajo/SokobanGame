@@ -7,8 +7,8 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <Label Grid.Row="0" Text="Select Level" FontSize="28" FontAttributes="Bold"
-               Margin="20,20,20,10"
+        <Label Grid.Row="0" Text="Select Level" FontSize="28"
+               FontAttributes="Bold" Margin="20,20,20,10"
                TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
 
         <CollectionView Grid.Row="1" x:Name="LevelsCollection"
@@ -17,23 +17,28 @@
                         Margin="10">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical" Span="3"
-                                 HorizontalItemSpacing="8" VerticalItemSpacing="8"/>
+                                 HorizontalItemSpacing="8"
+                                 VerticalItemSpacing="8"/>
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Frame BackgroundColor="{AppThemeBinding Light=#ecf0f1, Dark=#2c3e50}"
-                           CornerRadius="12" Padding="10" HeightRequest="90">
+                    <Border BackgroundColor="{AppThemeBinding Light=#ecf0f1, Dark=#2c3e50}"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent"
+                            Padding="10" HeightRequest="90">
                         <VerticalStackLayout VerticalOptions="Center">
                             <Label Text="{Binding Name}" FontSize="11"
-                                   FontAttributes="Bold" HorizontalOptions="Center"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
                                    TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
                             <Label Text="✓" FontSize="24" TextColor="Green"
                                    HorizontalOptions="Center"
                                    IsVisible="{Binding IsCompleted}"/>
                             <Label Text="{Binding BestMovesText}" FontSize="10"
-                                   TextColor="Gray" HorizontalOptions="Center"/>
+                                   TextColor="Gray"
+                                   HorizontalOptions="Center"/>
                         </VerticalStackLayout>
-                    </Frame>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

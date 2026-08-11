@@ -11,12 +11,12 @@ namespace SokobanGame.Views
         {
             try
             {
-                // Open the level selection page when the player chooses Play.
+                // Take the player to the page where they can pick a level
                 await Shell.Current.GoToAsync("LevelSelectPage");
             }
             catch (Exception ex)
             {
-                // Show an error message if the page cannot be opened.
+                // Show an error if something goes wrong with opening the page
                 await DisplayAlertAsync("Navigation Error", ex.Message, "OK");
             }
         }
@@ -25,12 +25,12 @@ namespace SokobanGame.Views
         {
             try
             {
-                // Open the level editor so the player can create their own levels.
+                // Open the editor so the player can make their own level
                 await Shell.Current.GoToAsync("LevelEditorPage");
             }
             catch (Exception ex)
             {
-                // Tell the user if there is a problem opening the editor.
+                // Let the player know if the editor could not be opened
                 await DisplayAlertAsync("Navigation Error", ex.Message, "OK");
             }
         }
@@ -39,12 +39,12 @@ namespace SokobanGame.Views
         {
             try
             {
-                // Open the settings page when the settings button is clicked.
+                // Open the settings page
                 await Shell.Current.GoToAsync("SettingsPage");
             }
             catch (Exception ex)
             {
-                // Display the error instead of letting the app fail silently.
+                // Show the error instead of the app failing without explaining why
                 await DisplayAlertAsync("Navigation Error", ex.Message, "OK");
             }
         }

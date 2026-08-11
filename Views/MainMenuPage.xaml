@@ -2,29 +2,45 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SokobanGame.Views.MainMenuPage"
-             BackgroundColor="{AppThemeBinding Light=White, Dark=#1a1a2e}">
+             BackgroundColor="#1a1a2e">
 
-    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+    <Grid RowDefinitions="*,Auto,*">
 
-        <Label Text="SOKOBAN" FontSize="48" FontAttributes="Bold"
-               HorizontalOptions="Center"
-               TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
+        <!-- Logo section -->
+        <VerticalStackLayout Grid.Row="0" VerticalOptions="End"
+                             HorizontalOptions="Center" Spacing="10"
+                             Padding="0,0,0,30">
+            <Label Text="📦" FontSize="80" HorizontalOptions="Center"/>
+            <Label Text="SOKOBAN" FontSize="52" FontAttributes="Bold"
+                   HorizontalOptions="Center" TextColor="White"
+                   CharacterSpacing="8"/>
+            <Label Text="Push the boxes onto the targets"
+                   FontSize="15" HorizontalOptions="Center"
+                   TextColor="#7f8c8d"/>
+        </VerticalStackLayout>
 
-        <Label Text="Push the boxes onto the targets!" FontSize="16"
-               HorizontalOptions="Center"
-               TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}"/>
+        <!-- Buttons -->
+        <VerticalStackLayout Grid.Row="1" Spacing="15"
+                             HorizontalOptions="Center">
+            <Button Text="▶   Play" Clicked="OnPlayClicked"
+                    WidthRequest="260" HeightRequest="58"
+                    BackgroundColor="#3498db" TextColor="White"
+                    CornerRadius="29" FontSize="18" FontAttributes="Bold"/>
+            <Button Text="🎨   Level Editor" Clicked="OnEditorClicked"
+                    WidthRequest="260" HeightRequest="58"
+                    BackgroundColor="#2ecc71" TextColor="White"
+                    CornerRadius="29" FontSize="18"/>
+            <Button Text="⚙   Settings" Clicked="OnSettingsClicked"
+                    WidthRequest="260" HeightRequest="58"
+                    BackgroundColor="#34495e" TextColor="White"
+                    CornerRadius="29" FontSize="18"/>
+        </VerticalStackLayout>
 
-        <Button Text="▶  Play" Clicked="OnPlayClicked"
-                WidthRequest="200" HeightRequest="55"
-                BackgroundColor="#3498db" TextColor="White" CornerRadius="28"/>
+        <!-- Footer -->
+        <Label Grid.Row="2" Text="ATU Galway-Mayo — 2026"
+               FontSize="12" TextColor="#4a4a6a"
+               HorizontalOptions="Center" VerticalOptions="End"
+               Margin="0,0,0,20"/>
 
-        <Button Text="🎨  Level Editor" Clicked="OnEditorClicked"
-                WidthRequest="200" HeightRequest="55"
-                BackgroundColor="#2ecc71" TextColor="White" CornerRadius="28"/>
-
-        <Button Text="⚙  Settings" Clicked="OnSettingsClicked"
-                WidthRequest="200" HeightRequest="55"
-                BackgroundColor="#95a5a6" TextColor="White" CornerRadius="28"/>
-
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>

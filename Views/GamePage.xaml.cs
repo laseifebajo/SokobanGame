@@ -1,30 +1,31 @@
+using Microsoft.Maui.Controls.Shapes;
 using SokobanGame.Models;
 using SokobanGame.Services;
 using SokobanGame.ViewModels;
 
 namespace SokobanGame.Views
 {
-    // This page is responsible for showing the actual Sokoban game.
     [QueryProperty(nameof(Level), "Level")]
     public partial class GamePage : ContentPage
     {
         private readonly GameViewModel _viewModel;
         private readonly PersistenceService _persistence;
 
-        // The selected level is passed to this page when the player chooses a level.
+        // The level is passed from the level select page when I choose a level.
         public Level? Level
         {
             set
             {
                 if (value != null)
                 {
-                    // Give the selected level to the ViewModel so the game can start.
+                    // I load the selected level into the ViewModel so the game
+                    // knows which level and grid the player is working with.
                     _viewModel.LoadLevel(value);
 
-                    // Show the level name at the top of the page.
+                    // I show the level name so the player knows which level they are on.
                     LevelNameLabel.Text = value.Name;
 
-                    // Draw the level on the screen.
+                    // Draw the level after loading it so it appears on screen.
                     RenderGrid();
                 }
             }
@@ -34,79 +35,89 @@ namespace SokobanGame.Views
         {
             InitializeComponent();
 
-            // The ViewModel handles the game logic and the persistence service
-            // is used for saving the player's progress.
+            // I use the ViewModel for the game logic instead of putting
+            // all the movement code directly in this page.
             _viewModel = viewModel;
+
+            // I need the persistence service here so I can save completed levels.
             _persistence = persistence;
 
-            // Set up the swipe controls so the player can move using gestures.
+            // Set up swiping so the player can control the game on mobile.
             SetupSwipeControls();
         }
 
+        // I use swipe gestures because the game is designed to work on mobile.
         private void SetupSwipeControls()
         {
-            // Create four swipe controls, one for each direction the player can move.
-            var swipeUp    = new SwipeGestureRecognizer { Direction = SwipeDirection.Up };
-            var swipeDown  = new SwipeGestureRecognizer { Direction = SwipeDirection.Down };
-            var swipeLeft  = new SwipeGestureRecognizer { Direction = SwipeDirection.Left };
+            var swipeUp = new SwipeGestureRecognizer { Direction = SwipeDirection.Up };
+            var swipeDown = new SwipeGestureRecognizer { Direction = SwipeDirection.Down };
+            var swipeLeft = new SwipeGestureRecognizer { Direction = SwipeDirection.Left };
             var swipeRight = new SwipeGestureRecognizer { Direction = SwipeDirection.Right };
 
-            // When the player swipes, call MovePlayer with the matching direction.
-            swipeUp.Swiped    += (s, e) => MovePlayer(GameEngine.Direction.Up);
-            swipeDown.Swiped  += (s, e) => MovePlayer(GameEngine.Direction.Down);
-            swipeLeft.Swiped  += (s, e) => MovePlayer(GameEngine.Direction.Left);
+            // Each swipe calls MovePlayer with the matching direction.
+            swipeUp.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Up);
+            swipeDown.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Down);
+            swipeLeft.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Left);
             swipeRight.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Right);
 
-            // Add the swipe controls to the game grid so they can detect the gestures.
+            // Add all four gestures to the game grid so it can detect the swipes.
             GameGrid.GestureRecognizers.Add(swipeUp);
             GameGrid.GestureRecognizers.Add(swipeDown);
             GameGrid.GestureRecognizers.Add(swipeLeft);
             GameGrid.GestureRecognizers.Add(swipeRight);
         }
 
+        // This runs when the player tries to move.
         private async void MovePlayer(GameEngine.Direction dir)
         {
-            // Ask the ViewModel to move the player and check if the level has been solved.
+            // The ViewModel checks if the move is valid and updates the game.
             bool won = await _viewModel.MoveAsync(dir);
 
-            // Update the number of moves shown on screen and redraw the level.
+            // Update the move counter and redraw the grid to show the new position.
             MoveCountLabel.Text = $"Moves: {_viewModel.MoveCount}";
             RenderGrid();
 
+            // MoveAsync tells me if the player has completed the level.
             if (won)
             {
-                // Save the player's result once the level has been completed.
                 await SaveProgress();
 
-                bool next = await DisplayAlertAsync("Level Complete! 🎉",
+                // Give the player the choice to leave or play the level again.
+                bool goBack = await DisplayAlertAsync(
+                    "Level Complete! 🎉",
                     $"You solved it in {_viewModel.MoveCount} moves!",
-                    "Next Level", "Back to Menu");
+                    "Back to Levels", "Play Again");
 
-                // Return to the previous page after completing the level.
-                // Both choices currently go back to the level selection screen.
-                if (next)
+                if (goBack)
                     await Shell.Current.GoToAsync("..");
                 else
-                    await Shell.Current.GoToAsync("..");
+                {
+                    // If they choose to play again, reset everything back to the start.
+                    _viewModel.Reset();
+                    MoveCountLabel.Text = "Moves: 0";
+                    RenderGrid();
+                }
             }
         }
 
+        // I save the level as completed and keep track of the best score.
         private async Task SaveProgress()
         {
-            // There is nothing to save if a level has not been loaded.
+            // If there is no level loaded, there is nothing to save.
             if (_viewModel.CurrentLevel == null) return;
 
-            // Load the progress that has already been saved.
-            var progress = await _persistence.LoadProgressAsync() ?? new List<LevelProgress>();
+            // Load any progress that was already saved.
+            // If there is none, start with an empty list.
+            var progress = await _persistence.LoadProgressAsync()
+                ?? new List<LevelProgress>();
 
-            // Check if this level already has a saved result.
+            // Look for a previous result for the current level.
             var existing = progress.FirstOrDefault(
                 p => p.LevelId == _viewModel.CurrentLevel.Id);
 
             if (existing == null)
             {
-                // If this is the first time completing the level,
-                // create a new progress record for it.
+                // If this is the first completion, create a new progress record.
                 progress.Add(new LevelProgress
                 {
                     LevelId = _viewModel.CurrentLevel.Id,
@@ -116,24 +127,26 @@ namespace SokobanGame.Views
             }
             else
             {
-                // The level has already been completed, so update its result.
+                // The level was already completed, so keep it marked as completed.
                 existing.IsCompleted = true;
 
-                // Only replace the best score if the player has used fewer moves.
+                // Only replace the old score if the new attempt used fewer moves.
                 if (_viewModel.MoveCount < existing.BestMoves)
                     existing.BestMoves = _viewModel.MoveCount;
             }
 
-            // Save the updated progress so it is remembered when the app is reopened.
+            // Save the updated progress so it is not lost when the app closes.
             await _persistence.SaveProgressAsync(progress);
         }
 
+        // This takes the 2D character array from the ViewModel
+        // and turns it into the visible game board.
         private void RenderGrid()
         {
-            // Don't try to draw anything if there is no level loaded.
             if (_viewModel.Grid == null) return;
 
-            // Clear the old grid before drawing the updated version.
+            // Clear the old grid first because I need to redraw it
+            // after the player moves.
             GameGrid.Children.Clear();
             GameGrid.RowDefinitions.Clear();
             GameGrid.ColumnDefinitions.Clear();
@@ -141,28 +154,37 @@ namespace SokobanGame.Views
             int rows = _viewModel.Grid.GetLength(0);
             int cols = _viewModel.Grid.GetLength(1);
 
-            // Work out a cell size that fits on the device screen.
-            // The maximum size of a cell is 55 so larger levels still fit.
-            int cellSize = Math.Min(
-                (int)(DeviceDisplay.Current.MainDisplayInfo.Width / cols /
-                DeviceDisplay.Current.MainDisplayInfo.Density),
-                55);
+            // Work out the available screen size so the game board
+            // can fit properly on different screen sizes.
+            double screenWidth = DeviceDisplay.Current.MainDisplayInfo.Width
+                / DeviceDisplay.Current.MainDisplayInfo.Density;
+            double screenHeight = DeviceDisplay.Current.MainDisplayInfo.Height
+                / DeviceDisplay.Current.MainDisplayInfo.Density;
 
-            // Create the correct number of rows and columns for the level.
+            // I calculate the cell size based on both the width and height.
+            // This stops the grid from becoming too large in one direction.
+            int cellByWidth = (int)((screenWidth - 20) / cols);
+            int cellByHeight = (int)((screenHeight - 180) / rows);
+            int cellSize = Math.Min(cellByWidth, cellByHeight);
+
+            // I added a minimum size so the game is still easy to see and use.
+            cellSize = Math.Max(cellSize, 35);
+
+            // Create the rows and columns using the calculated cell size.
             for (int r = 0; r < rows; r++)
                 GameGrid.RowDefinitions.Add(new RowDefinition(cellSize));
 
             for (int c = 0; c < cols; c++)
                 GameGrid.ColumnDefinitions.Add(new ColumnDefinition(cellSize));
 
-            // Go through every position in the level and create the matching visual cell.
+            // Go through every position in the 2D array and create
+            // the correct visual cell for that character.
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    var cell = CreateCell(_viewModel.Grid[r, c]);
+                    var cell = CreateCell(_viewModel.Grid[r, c], cellSize);
 
-                    // Put the cell in the correct row and column.
                     Grid.SetRow(cell, r);
                     Grid.SetColumn(cell, c);
 
@@ -171,67 +193,143 @@ namespace SokobanGame.Views
             }
         }
 
-        // Changes each character in the level into something that can be displayed.
-        // For example, # is a wall, $ is a box and @ is the player.
-        private View CreateCell(char symbol) => symbol switch
+        // I pass the cell size into this method so the emojis and other
+        // objects can scale depending on how big the game grid is.
+        private View CreateCell(char symbol, int cellSize)
         {
-            '#' => new BoxView { Color = Colors.DarkSlateGray },
-            '@' => new Label
+            // Most cells have a floor underneath them.
+            var floor = new BoxView
             {
-                Text = "🧍",
-                FontSize = 22,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
-            },
-            '$' => new BoxView
-            {
-                Color = Colors.SaddleBrown,
-                Margin = 3,
-                CornerRadius = 4
-            },
-            '.' => new BoxView
-            {
-                Color = Colors.LightBlue,
-                Margin = 6,
-                CornerRadius = 20
-            },
-            '*' => new BoxView
-            {
-                Color = Colors.Green,
-                Margin = 3,
-                CornerRadius = 4
-            },
-            '+' => new Label
-            {
-                Text = "🧍",
-                FontSize = 22,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center,
-                BackgroundColor = Colors.LightBlue
-            },
-            _ => new BoxView { Color = Color.FromArgb("#e8e8e8") }
-        };
+                Color = Color.FromArgb("#c4a882")
+            };
 
+            // Choose what to display based on the character in the level array.
+            View overlay = symbol switch
+            {
+                // A wall is just a darker block.
+                '#' => new BoxView
+                {
+                    Color = Color.FromArgb("#7a7a8a")
+                },
+
+                // A box has a border and a symbol in the middle
+                // to make it look different from the floor.
+                '$' => new Border
+                {
+                    BackgroundColor = Color.FromArgb("#c8892a"),
+                    Stroke = Color.FromArgb("#8b5e1a"),
+                    StrokeThickness = 3,
+                    StrokeShape = new RoundRectangle { CornerRadius = 4 },
+                    Margin = 2,
+                    Content = new Label
+                    {
+                        Text = "▦",
+                        FontSize = cellSize * 0.45,
+                        TextColor = Color.FromArgb("#8b5e1a"),
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center
+                    }
+                },
+
+                // A target is shown as a green outlined square.
+                '.' => new Border
+                {
+                    BackgroundColor = Colors.Transparent,
+                    Stroke = Color.FromArgb("#2ecc71"),
+                    StrokeThickness = 3,
+                    StrokeShape = new RoundRectangle { CornerRadius = 4 },
+                    Margin = 4,
+                    Content = new Label
+                    {
+                        Text = "✕",
+                        FontSize = cellSize * 0.45,
+                        TextColor = Color.FromArgb("#2ecc71"),
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center
+                    }
+                },
+
+                // A box on a target is green so the player can see
+                // that they have correctly placed a box.
+                '*' => new Border
+                {
+                    BackgroundColor = Color.FromArgb("#27ae60"),
+                    Stroke = Color.FromArgb("#1e8449"),
+                    StrokeThickness = 3,
+                    StrokeShape = new RoundRectangle { CornerRadius = 4 },
+                    Margin = 2,
+                    Content = new Label
+                    {
+                        Text = "✕",
+                        FontSize = cellSize * 0.45,
+                        TextColor = Colors.White,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center
+                    }
+                },
+
+                // The player is represented using an emoji.
+                '@' => new Label
+                {
+                    Text = "🧍",
+                    FontSize = cellSize * 0.6,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
+                },
+
+                // This is also the player, but the character is on a target.
+                '+' => new Label
+                {
+                    Text = "🧍",
+                    FontSize = cellSize * 0.6,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
+                },
+
+                // Anything else is treated as an empty floor cell.
+                _ => new BoxView
+                {
+                    Color = Colors.Transparent
+                }
+            };
+
+            // Walls do not need a floor underneath them.
+            if (symbol == '#')
+                return overlay;
+
+            // For the other cells, put the object on top of the floor.
+            var grid = new Grid();
+            grid.Children.Add(floor);
+            grid.Children.Add(overlay);
+
+            return grid;
+        }
+
+        // Go back to the previous page when the back button is pressed.
         private void OnBackClicked(object sender, EventArgs e)
-            // Go back to the previous page when the back button is clicked.
             => Shell.Current.GoToAsync("..");
 
+        // Undo the last move using the move history stored in the ViewModel.
         private void OnUndoClicked(object sender, EventArgs e)
         {
-            // Undo the player's last move, then update the screen.
             _viewModel.Undo();
+
+            // Update the counter and redraw the board after undoing.
             MoveCountLabel.Text = $"Moves: {_viewModel.MoveCount}";
             RenderGrid();
         }
 
+        // Reset the level back to its original starting position.
         private void OnResetClicked(object sender, EventArgs e)
         {
-            // Reset the level back to its starting position.
             _viewModel.Reset();
 
-            // Reset the move counter and redraw the level.
+            // Reset the counter and redraw the starting board.
             MoveCountLabel.Text = "Moves: 0";
             RenderGrid();
         }
     }
 }
+
