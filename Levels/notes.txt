@@ -1,0 +1,47 @@
+# HOW I DESIGNED THE LEVELS
+
+Each level is stored as a grid string in `levels.json`. I use `\n` to separate each row so the game can read the level row by row
+
+### Symbols I used
+
+`#` = wall
+` ` = empty floor
+`@` = player
+`$` = box
+`.` = target
+`*` = box on target
+`+` = player on target
+
+### Level rules
+
+When making the levels, I made sure:
+
+* There are the same number of boxes and targets.
+* The player can reach the boxes.
+* Boxes cannot get stuck in unwanted corners.
+* The level is completely surrounded by walls.
+
+### How I made them
+
+I sketched the levels on paper first to plan where everything should go. I then converted each row into a string and joined them using `\n`
+
+For example:
+
+```text
+"######\n#     #\n# @$. #\n#     #\n######"
+```
+
+### Difficulty
+
+I gradually increased the difficulty across the 8 levels:
+
+Level 1: Simple one-box puzzle to learn the game
+Level 2: Player has to move around before pushing
+Level 3: Two boxes and two targets
+Level 4: Boxes need to be pushed in the correct order
+Level 5: Internal walls block direct paths
+Level 6: Three boxes where order matters
+Level 7: Narrow gaps make movement harder
+Level 8: Largest level with multiple rooms and the most complicated puzzle
+
+I made the levels get harder gradually so the player can learn the game before reaching the harder puzzles

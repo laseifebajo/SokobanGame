@@ -193,116 +193,61 @@ namespace SokobanGame.Views
             }
         }
 
-        // I pass the cell size into this method so the emojis and other
-        // objects can scale depending on how big the game grid is.
+        // I'm now using real images instead of coloured boxes and emojis
         private View CreateCell(char symbol, int cellSize)
         {
-            // Most cells have a floor underneath them.
-            var floor = new BoxView
+            // Every cell gets a ground tile underneath
+            var ground = new Image
             {
-                Color = Color.FromArgb("#c4a882")
+                Source = "ground.png",
+                Aspect = Aspect.Fill,
+                WidthRequest = cellSize,
+                HeightRequest = cellSize
             };
 
-            // Choose what to display based on the character in the level array.
-            View overlay = symbol switch
-            {
-                // A wall is just a darker block.
-                '#' => new BoxView
-                {
-                    Color = Color.FromArgb("#7a7a8a")
-                },
-
-                // A box has a border and a symbol in the middle
-                // to make it look different from the floor.
-                '$' => new Border
-                {
-                    BackgroundColor = Color.FromArgb("#c8892a"),
-                    Stroke = Color.FromArgb("#8b5e1a"),
-                    StrokeThickness = 3,
-                    StrokeShape = new RoundRectangle { CornerRadius = 4 },
-                    Margin = 2,
-                    Content = new Label
-                    {
-                        Text = "▦",
-                        FontSize = cellSize * 0.45,
-                        TextColor = Color.FromArgb("#8b5e1a"),
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center
-                    }
-                },
-
-                // A target is shown as a green outlined square.
-                '.' => new Border
-                {
-                    BackgroundColor = Colors.Transparent,
-                    Stroke = Color.FromArgb("#2ecc71"),
-                    StrokeThickness = 3,
-                    StrokeShape = new RoundRectangle { CornerRadius = 4 },
-                    Margin = 4,
-                    Content = new Label
-                    {
-                        Text = "✕",
-                        FontSize = cellSize * 0.45,
-                        TextColor = Color.FromArgb("#2ecc71"),
-                        FontAttributes = FontAttributes.Bold,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center
-                    }
-                },
-
-                // A box on a target is green so the player can see
-                // that they have correctly placed a box.
-                '*' => new Border
-                {
-                    BackgroundColor = Color.FromArgb("#27ae60"),
-                    Stroke = Color.FromArgb("#1e8449"),
-                    StrokeThickness = 3,
-                    StrokeShape = new RoundRectangle { CornerRadius = 4 },
-                    Margin = 2,
-                    Content = new Label
-                    {
-                        Text = "✕",
-                        FontSize = cellSize * 0.45,
-                        TextColor = Colors.White,
-                        FontAttributes = FontAttributes.Bold,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center
-                    }
-                },
-
-                // The player is represented using an emoji.
-                '@' => new Label
-                {
-                    Text = "🧍",
-                    FontSize = cellSize * 0.6,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center
-                },
-
-                // This is also the player, but the character is on a target.
-                '+' => new Label
-                {
-                    Text = "🧍",
-                    FontSize = cellSize * 0.6,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center
-                },
-
-                // Anything else is treated as an empty floor cell.
-                _ => new BoxView
-                {
-                    Color = Colors.Transparent
-                }
-            };
-
-            // Walls do not need a floor underneath them.
+            // Wall cells don't show ground — just the wall block
             if (symbol == '#')
-                return overlay;
+            {
+                return new Image
+                {
+                    Source = "wall.png",
+                    Aspect = Aspect.Fill,
+                    WidthRequest = cellSize,
+                    HeightRequest = cellSize
+                };
+            }
 
-            // For the other cells, put the object on top of the floor.
-            var grid = new Grid();
-            grid.Children.Add(floor);
-            grid.Children.Add(overlay);
+            // For everything else, stack ground + the sprite on top
+            var grid = new Grid
+            {
+                WidthRequest = cellSize,
+                HeightRequest = cellSize
+            };
+
+            grid.Children.Add(ground);
+
+            // Pick the right sprite for the symbol
+            string? spriteSource = symbol switch
+            {
+                '$' => "box.png",
+                '*' => "box_on_target.png",
+                '.' => "target.png",
+                '@' => "player.png",
+                '+' => "player.png",  // player standing on target
+                _   => null            // empty floor - just show ground
+            };
+
+            if (spriteSource != null)
+            {
+                var sprite = new Image
+                {
+                    Source = spriteSource,
+                    Aspect = Aspect.AspectFit,
+                    WidthRequest = cellSize,
+                    HeightRequest = cellSize
+                };
+                grid.Children.Add(sprite);
+            }
 
             return grid;
         }

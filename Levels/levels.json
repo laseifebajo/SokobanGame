@@ -1,45 +1,51 @@
 {
   "levels": [
     {
-      "id": "level_one",
-      "name": "Getting Started",
-      "grid": "#####\n#@$.#\n#####",
+      "id": "builtin_1",
+      "name": "Level 1 - Warm Up",
+      "grid": "######\n#    #\n#@$. #\n#    #\n######",
       "isBuiltIn": true
     },
     {
-      "id": "level_two",
-      "name": "The Hallway",
-      "grid": "#######\n#.@$$.#\n#######",
+      "id": "builtin_2",
+      "name": "Level 2 - First Corner",
+      "grid": "#######\n#.    #\n#     #\n#  $  #\n#  @  #\n#######",
       "isBuiltIn": true
     },
     {
-      "id": "level_three",
-      "name": "First Challenge",
-      "grid": "#####\n#@  #\n# $ #\n# . #\n#####",
+      "id": "builtin_3",
+      "name": "Level 3 - Two Boxes",
+      "grid": "#######\n#     #\n# ..  #\n# $$  #\n#  @  #\n#######",
       "isBuiltIn": true
     },
     {
-      "id": "level_four",
-      "name": "Two Boxes",
-      "grid": "######\n#    #\n#@$$ #\n# .. #\n######",
+      "id": "builtin_4",
+      "name": "Level 4 - Side by Side",
+      "grid": "########\n#      #\n# ..   #\n# $$@  #\n#      #\n########",
       "isBuiltIn": true
     },
     {
-      "id": "level_five",
-      "name": "Box Puzzle",
-      "grid": "#######\n#     #\n#@$ $ #\n# . . #\n#######",
+      "id": "builtin_5",
+      "name": "Level 5 - The Room",
+      "grid": "#########\n#       #\n# #.  # #\n# # $ # #\n# #   # #\n# #.@ # #\n#       #\n#########",
       "isBuiltIn": true
     },
     {
-      "id": "level_six",
-      "name": "Narrow Path",
-      "grid": "########\n#@     #\n# $$$  #\n#  ... #\n########",
+      "id": "builtin_6",
+      "name": "Level 6 - Three in a Row",
+      "grid": "#########\n#       #\n#  ...  #\n#  $$$  #\n#   @   #\n#########",
       "isBuiltIn": true
     },
     {
-      "id": "level_seven",
-      "name": "Small Room",
-      "grid": "########\n#  .   #\n#  $   #\n# @$   #\n#  .   #\n########",
+      "id": "builtin_7",
+      "name": "Level 7 - Bottleneck",
+      "grid": "##########\n#        #\n# ##  ## #\n# #.$.$# #\n# #    # #\n# #  @ # #\n# ##  ## #\n#        #\n##########",
+      "isBuiltIn": true
+    },
+    {
+      "id": "builtin_8",
+      "name": "Level 8 - The Maze",
+      "grid": "##########\n#   #    #\n# $ # $  #\n# . #  . #\n#   ##   #\n# @      #\n#   ##   #\n# $ #  $ #\n# . #  . #\n##########",
       "isBuiltIn": true
     }
   ]
