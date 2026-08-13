@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Shapes;
 using SokobanGame.Models;
 using SokobanGame.Services;
 using SokobanGame.ViewModels;
@@ -11,21 +10,15 @@ namespace SokobanGame.Views
         private readonly GameViewModel _viewModel;
         private readonly PersistenceService _persistence;
 
-        // The level is passed from the level select page when I choose a level.
+        // The selected level gets passed over from the level select page
         public Level? Level
         {
             set
             {
                 if (value != null)
                 {
-                    // I load the selected level into the ViewModel so the game
-                    // knows which level and grid the player is working with.
                     _viewModel.LoadLevel(value);
-
-                    // I show the level name so the player knows which level they are on.
                     LevelNameLabel.Text = value.Name;
-
-                    // Draw the level after loading it so it appears on screen.
                     RenderGrid();
                 }
             }
@@ -35,54 +28,77 @@ namespace SokobanGame.Views
         {
             InitializeComponent();
 
-            // I use the ViewModel for the game logic instead of putting
-            // all the movement code directly in this page.
+            // I keep the game logic in the ViewModel so this page mainly deals with the UI
             _viewModel = viewModel;
 
-            // I need the persistence service here so I can save completed levels.
+            // Used to save the player's progress when they finish a level
             _persistence = persistence;
 
-            // Set up swiping so the player can control the game on mobile.
-            SetupSwipeControls();
+            // Set up swiping so the player can move by dragging their finger
+            SetupPanGesture();
         }
 
-        // I use swipe gestures because the game is designed to work on mobile.
-        private void SetupSwipeControls()
+        private void SetupPanGesture()
         {
-            var swipeUp = new SwipeGestureRecognizer { Direction = SwipeDirection.Up };
-            var swipeDown = new SwipeGestureRecognizer { Direction = SwipeDirection.Down };
-            var swipeLeft = new SwipeGestureRecognizer { Direction = SwipeDirection.Left };
-            var swipeRight = new SwipeGestureRecognizer { Direction = SwipeDirection.Right };
+            var pan = new PanGestureRecognizer();
+            bool hasMoved = false;
 
-            // Each swipe calls MovePlayer with the matching direction.
-            swipeUp.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Up);
-            swipeDown.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Down);
-            swipeLeft.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Left);
-            swipeRight.Swiped += (s, e) => MovePlayer(GameEngine.Direction.Right);
+            pan.PanUpdated += (s, e) =>
+            {
+                if (e.StatusType == GestureStatus.Started)
+                {
+                    hasMoved = false;
+                }
+                else if (e.StatusType == GestureStatus.Running && !hasMoved)
+                {
+                    double dx = e.TotalX;
+                    double dy = e.TotalY;
 
-            // Add all four gestures to the game grid so it can detect the swipes.
-            GameGrid.GestureRecognizers.Add(swipeUp);
-            GameGrid.GestureRecognizers.Add(swipeDown);
-            GameGrid.GestureRecognizers.Add(swipeLeft);
-            GameGrid.GestureRecognizers.Add(swipeRight);
+                    // I use a small distance before moving so a tiny touch doesn't count as a move
+                    if (Math.Abs(dx) > 30 || Math.Abs(dy) > 30)
+                    {
+                        // Stops one swipe from moving the player more than once
+                        hasMoved = true;
+
+                        // Whichever direction the finger moved the most is the direction used
+                        if (Math.Abs(dx) > Math.Abs(dy))
+                            MovePlayer(dx > 0
+                                ? GameEngine.Direction.Right
+                                : GameEngine.Direction.Left);
+                        else
+                            MovePlayer(dy > 0
+                                ? GameEngine.Direction.Down
+                                : GameEngine.Direction.Up);
+                    }
+                }
+            };
+
+            PageGrid.GestureRecognizers.Add(pan);
         }
 
-        // This runs when the player tries to move.
+        private void OnUpClicked(object sender, EventArgs e)
+            => MovePlayer(GameEngine.Direction.Up);
+
+        private void OnDownClicked(object sender, EventArgs e)
+            => MovePlayer(GameEngine.Direction.Down);
+
+        private void OnLeftClicked(object sender, EventArgs e)
+            => MovePlayer(GameEngine.Direction.Left);
+
+        private void OnRightClicked(object sender, EventArgs e)
+            => MovePlayer(GameEngine.Direction.Right);
+
         private async void MovePlayer(GameEngine.Direction dir)
         {
-            // The ViewModel checks if the move is valid and updates the game.
             bool won = await _viewModel.MoveAsync(dir);
 
-            // Update the move counter and redraw the grid to show the new position.
             MoveCountLabel.Text = $"Moves: {_viewModel.MoveCount}";
             RenderGrid();
 
-            // MoveAsync tells me if the player has completed the level.
             if (won)
             {
                 await SaveProgress();
 
-                // Give the player the choice to leave or play the level again.
                 bool goBack = await DisplayAlertAsync(
                     "Level Complete! 🎉",
                     $"You solved it in {_viewModel.MoveCount} moves!",
@@ -92,7 +108,7 @@ namespace SokobanGame.Views
                     await Shell.Current.GoToAsync("..");
                 else
                 {
-                    // If they choose to play again, reset everything back to the start.
+                    // Let the player try again if they want to beat their score
                     _viewModel.Reset();
                     MoveCountLabel.Text = "Moves: 0";
                     RenderGrid();
@@ -100,24 +116,20 @@ namespace SokobanGame.Views
             }
         }
 
-        // I save the level as completed and keep track of the best score.
         private async Task SaveProgress()
         {
-            // If there is no level loaded, there is nothing to save.
             if (_viewModel.CurrentLevel == null) return;
 
-            // Load any progress that was already saved.
-            // If there is none, start with an empty list.
+            // Load the old scores first so completing one level doesn't overwrite the others
             var progress = await _persistence.LoadProgressAsync()
                 ?? new List<LevelProgress>();
 
-            // Look for a previous result for the current level.
             var existing = progress.FirstOrDefault(
                 p => p.LevelId == _viewModel.CurrentLevel.Id);
 
             if (existing == null)
             {
-                // If this is the first completion, create a new progress record.
+                // First time completing this level, so create a new score for it
                 progress.Add(new LevelProgress
                 {
                     LevelId = _viewModel.CurrentLevel.Id,
@@ -127,26 +139,21 @@ namespace SokobanGame.Views
             }
             else
             {
-                // The level was already completed, so keep it marked as completed.
                 existing.IsCompleted = true;
 
-                // Only replace the old score if the new attempt used fewer moves.
+                // Lower moves is better, so only replace the old score if this attempt was better
                 if (_viewModel.MoveCount < existing.BestMoves)
                     existing.BestMoves = _viewModel.MoveCount;
             }
 
-            // Save the updated progress so it is not lost when the app closes.
             await _persistence.SaveProgressAsync(progress);
         }
 
-        // This takes the 2D character array from the ViewModel
-        // and turns it into the visible game board.
         private void RenderGrid()
         {
             if (_viewModel.Grid == null) return;
 
-            // Clear the old grid first because I need to redraw it
-            // after the player moves.
+            // Clear the old version because the board changes after every move
             GameGrid.Children.Clear();
             GameGrid.RowDefinitions.Clear();
             GameGrid.ColumnDefinitions.Clear();
@@ -154,31 +161,26 @@ namespace SokobanGame.Views
             int rows = _viewModel.Grid.GetLength(0);
             int cols = _viewModel.Grid.GetLength(1);
 
-            // Work out the available screen size so the game board
-            // can fit properly on different screen sizes.
             double screenWidth = DeviceDisplay.Current.MainDisplayInfo.Width
                 / DeviceDisplay.Current.MainDisplayInfo.Density;
+
             double screenHeight = DeviceDisplay.Current.MainDisplayInfo.Height
                 / DeviceDisplay.Current.MainDisplayInfo.Density;
 
-            // I calculate the cell size based on both the width and height.
-            // This stops the grid from becoming too large in one direction.
+            // Work out the cell size so different sized levels can still fit on the screen
             int cellByWidth = (int)((screenWidth - 20) / cols);
-            int cellByHeight = (int)((screenHeight - 180) / rows);
+            int cellByHeight = (int)((screenHeight - 220) / rows);
             int cellSize = Math.Min(cellByWidth, cellByHeight);
 
-            // I added a minimum size so the game is still easy to see and use.
+            // Stop the cells becoming too small to see
             cellSize = Math.Max(cellSize, 35);
 
-            // Create the rows and columns using the calculated cell size.
             for (int r = 0; r < rows; r++)
                 GameGrid.RowDefinitions.Add(new RowDefinition(cellSize));
 
             for (int c = 0; c < cols; c++)
                 GameGrid.ColumnDefinitions.Add(new ColumnDefinition(cellSize));
 
-            // Go through every position in the 2D array and create
-            // the correct visual cell for that character.
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -193,19 +195,9 @@ namespace SokobanGame.Views
             }
         }
 
-        // I'm now using real images instead of coloured boxes and emojis
         private View CreateCell(char symbol, int cellSize)
         {
-            // Every cell gets a ground tile underneath
-            var ground = new Image
-            {
-                Source = "ground.png",
-                Aspect = Aspect.Fill,
-                WidthRequest = cellSize,
-                HeightRequest = cellSize
-            };
-
-            // Wall cells don't show ground — just the wall block
+            // Walls are different because they don't need a floor underneath
             if (symbol == '#')
             {
                 return new Image
@@ -217,64 +209,62 @@ namespace SokobanGame.Views
                 };
             }
 
-            // For everything else, stack ground + the sprite on top
+            // Start with the ground, then put the player/box/target on top of it
             var grid = new Grid
             {
                 WidthRequest = cellSize,
                 HeightRequest = cellSize
             };
 
-            grid.Children.Add(ground);
+            grid.Children.Add(new Image
+            {
+                Source = "ground.png",
+                Aspect = Aspect.Fill,
+                WidthRequest = cellSize,
+                HeightRequest = cellSize
+            });
 
-            // Pick the right sprite for the symbol
             string? spriteSource = symbol switch
             {
                 '$' => "box.png",
                 '*' => "box_on_target.png",
                 '.' => "target.png",
                 '@' => "player.png",
-                '+' => "player.png",  // player standing on target
-                _   => null            // empty floor - just show ground
+                '+' => "player.png",
+                _   => null
             };
 
             if (spriteSource != null)
             {
-                var sprite = new Image
+                grid.Children.Add(new Image
                 {
                     Source = spriteSource,
                     Aspect = Aspect.AspectFit,
                     WidthRequest = cellSize,
                     HeightRequest = cellSize
-                };
-                grid.Children.Add(sprite);
+                });
             }
 
             return grid;
         }
 
-        // Go back to the previous page when the back button is pressed.
         private void OnBackClicked(object sender, EventArgs e)
             => Shell.Current.GoToAsync("..");
 
-        // Undo the last move using the move history stored in the ViewModel.
+        // Undo uses the move history stored in the ViewModel
         private void OnUndoClicked(object sender, EventArgs e)
         {
             _viewModel.Undo();
-
-            // Update the counter and redraw the board after undoing.
             MoveCountLabel.Text = $"Moves: {_viewModel.MoveCount}";
             RenderGrid();
         }
 
-        // Reset the level back to its original starting position.
+        // Put everything back to the starting position
         private void OnResetClicked(object sender, EventArgs e)
         {
             _viewModel.Reset();
-
-            // Reset the counter and redraw the starting board.
             MoveCountLabel.Text = "Moves: 0";
             RenderGrid();
         }
     }
 }
-

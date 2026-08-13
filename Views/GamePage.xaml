@@ -4,15 +4,15 @@
              x:Class="SokobanGame.Views.GamePage"
              BackgroundColor="{AppThemeBinding Light=#1a1a2e, Dark=#0d0d1a}">
 
-    <Grid RowDefinitions="60,*,80">
+    <!-- I used a transparent background here because Android was not always picking up the swipe gestures properly without it -->
+    <Grid x:Name="PageGrid" RowDefinitions="60,*,130" BackgroundColor="Transparent">
 
-        <!-- Top bar -->
+        <!-- This is the top part of the game page. It shows the back button, level name and current moves -->
         <Grid Grid.Row="0" ColumnDefinitions="60,*,100"
               BackgroundColor="{AppThemeBinding Light=#16213e, Dark=#0d0d1a}"
               Padding="5,0">
             <Button Grid.Column="0" Text="←" Clicked="OnBackClicked"
-                    FontSize="24" BackgroundColor="Transparent"
-                    TextColor="White"/>
+                    FontSize="24" BackgroundColor="Transparent" TextColor="White"/>
             <Label Grid.Column="1" x:Name="LevelNameLabel"
                    FontSize="18" FontAttributes="Bold"
                    VerticalOptions="Center" HorizontalOptions="Center"
@@ -23,24 +23,44 @@
                    TextColor="#3498db"/>
         </Grid>
 
-        <!-- Game grid fills the whole middle section -->
-        <ScrollView Grid.Row="1" HorizontalScrollBarVisibility="Never">
-            <Grid x:Name="GameGrid"
-                  HorizontalOptions="Center"
-                  VerticalOptions="Center"
-                  Margin="5"/>
-        </ScrollView>
+        <!-- The actual Sokoban level is drawn inside this grid. I didn't use a ScrollView because it was interfering with swiping on Android-->
+        <Grid x:Name="GameGrid" Grid.Row="1"
+              HorizontalOptions="Center"
+              VerticalOptions="Center"
+              Margin="5"/>
 
-        <!-- Bottom bar -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,*"
+        <!-- The bottom section contains the controls for moving, undoing and resetting the level -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto"
               BackgroundColor="{AppThemeBinding Light=#16213e, Dark=#0d0d1a}"
-              Padding="20,10">
-            <Button Grid.Column="0" Text="↩  Undo" Clicked="OnUndoClicked"
-                    BackgroundColor="#3498db" TextColor="White"
-                    CornerRadius="25" Margin="5,0"/>
-            <Button Grid.Column="1" Text="↺  Reset" Clicked="OnResetClicked"
-                    BackgroundColor="#e74c3c" TextColor="White"
-                    CornerRadius="25" Margin="5,0"/>
+              Padding="10,5">
+
+            <!-- I added arrow buttons as well as swipe controls so the game can still be played easily on different devices -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,*,*,*"
+                  Padding="5,0" Margin="0,0,0,5">
+                <Button Grid.Column="0" Text="←" Clicked="OnLeftClicked"
+                        HeightRequest="40" BackgroundColor="#34495e"
+                        TextColor="White" CornerRadius="20" FontSize="18"/>
+                <Button Grid.Column="1" Text="↑" Clicked="OnUpClicked"
+                        HeightRequest="40" BackgroundColor="#34495e"
+                        TextColor="White" CornerRadius="20" FontSize="18"/>
+                <Button Grid.Column="2" Text="↓" Clicked="OnDownClicked"
+                        HeightRequest="40" BackgroundColor="#34495e"
+                        TextColor="White" CornerRadius="20" FontSize="18"/>
+                <Button Grid.Column="3" Text="→" Clicked="OnRightClicked"
+                        HeightRequest="40" BackgroundColor="#34495e"
+                        TextColor="White" CornerRadius="20" FontSize="18"/>
+            </Grid>
+
+            <!-- These buttons let the player undo their last move or restart the level -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" Padding="5,0">
+                <Button Grid.Column="0" Text="↩  Undo" Clicked="OnUndoClicked"
+                        BackgroundColor="#3498db" TextColor="White"
+                        CornerRadius="20" Margin="5,0" HeightRequest="40"/>
+                <Button Grid.Column="1" Text="↺  Reset" Clicked="OnResetClicked"
+                        BackgroundColor="#e74c3c" TextColor="White"
+                        CornerRadius="20" Margin="5,0" HeightRequest="40"/>
+            </Grid>
+
         </Grid>
 
     </Grid>

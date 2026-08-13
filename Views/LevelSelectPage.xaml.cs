@@ -5,11 +5,11 @@ namespace SokobanGame.Views
 {
     public partial class LevelSelectPage : ContentPage
     {
-        // These services provide the built-in levels and saved player data.
+        // These services provide the built-in levels and saved player data
         private readonly LevelService _levelService;
         private readonly PersistenceService _persistence;
 
-        // Stores the levels in a format that can be displayed by the CollectionView.
+        // Stores the levels in a format that can be displayed by the CollectionView
         private List<LevelDisplayItem> _items = new();
 
         public LevelSelectPage(LevelService levelService, PersistenceService persistence)
@@ -24,7 +24,7 @@ namespace SokobanGame.Views
         {
             base.OnAppearing();
 
-            // Reload the levels whenever this page is opened.
+            // Reload the levels whenever this page is opened
             await LoadLevels();
         }
 
@@ -76,7 +76,7 @@ namespace SokobanGame.Views
             // Make sure the selected item is actually a level before continuing
             if (e.CurrentSelection.FirstOrDefault() is not LevelDisplayItem item) return;
 
-            // Clear the selection so the same level can be selected again later.
+            // Clear the selection so the same level can be selected again later
             LevelsCollection.SelectedItem = null;
 
             // Pass the selected level to the game page.
@@ -89,7 +89,7 @@ namespace SokobanGame.Views
         }
     }
 
-    // Holds the information needed to display a level in the level selection screen.
+    // Holds the information needed to display a level in the level selection screen
     public class LevelDisplayItem
     {
         public Level Level { get; set; } = new();
