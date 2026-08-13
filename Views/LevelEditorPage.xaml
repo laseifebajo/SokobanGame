@@ -10,24 +10,24 @@
                Margin="10"
                TextColor="{AppThemeBinding Light=#2c3e50, Dark=White}"/>
 
-        <!-- Tool Palette -->
+        <!-- Tool Palette using ImageButtons -->
         <HorizontalStackLayout Grid.Row="1" Spacing="5" Padding="5"
-                               HorizontalOptions="Center">
-            <Button x:Name="WallBtn" Text="#" WidthRequest="50" HeightRequest="50"
-                    BackgroundColor="DarkSlateGray" TextColor="White"
-                    Clicked="ToolSelected" CommandParameter="#"/>
-            <Button x:Name="FloorBtn" Text="□" WidthRequest="50" HeightRequest="50"
-                    BackgroundColor="LightGray"
-                    Clicked="ToolSelected" CommandParameter=" "/>
-            <Button x:Name="PlayerBtn" Text="@" WidthRequest="50" HeightRequest="50"
-                    BackgroundColor="SteelBlue" TextColor="White"
-                    Clicked="ToolSelected" CommandParameter="@"/>
-            <Button x:Name="BoxBtn" Text="$" WidthRequest="50" HeightRequest="50"
-                    BackgroundColor="SaddleBrown" TextColor="White"
-                    Clicked="ToolSelected" CommandParameter="$"/>
-            <Button x:Name="TargetBtn" Text="." WidthRequest="50" HeightRequest="50"
-                    BackgroundColor="LightBlue"
-                    Clicked="ToolSelected" CommandParameter="."/>
+                                HorizontalOptions="Center">
+            <ImageButton x:Name="WallBtn" Source="wall.png" WidthRequest="50" HeightRequest="50"
+                         BackgroundColor="Transparent"
+                         Clicked="ToolSelected" CommandParameter="#"/>
+            <ImageButton x:Name="FloorBtn" Source="ground.png" WidthRequest="50" HeightRequest="50"
+                         BackgroundColor="Transparent"
+                         Clicked="ToolSelected" CommandParameter=" "/>
+            <ImageButton x:Name="PlayerBtn" Source="player.png" WidthRequest="50" HeightRequest="50"
+                         BackgroundColor="Transparent"
+                         Clicked="ToolSelected" CommandParameter="@"/>
+            <ImageButton x:Name="BoxBtn" Source="box.png" WidthRequest="50" HeightRequest="50"
+                         BackgroundColor="Transparent"
+                         Clicked="ToolSelected" CommandParameter="$"/>
+            <ImageButton x:Name="TargetBtn" Source="target.png" WidthRequest="50" HeightRequest="50"
+                         BackgroundColor="Transparent"
+                         Clicked="ToolSelected" CommandParameter="."/>
         </HorizontalStackLayout>
 
         <!-- Editor Grid -->
@@ -38,13 +38,15 @@
 
         <!-- Bottom buttons -->
         <HorizontalStackLayout Grid.Row="3" Spacing="10"
-                               HorizontalOptions="Center" Padding="10">
+                                HorizontalOptions="Center" Padding="10">
             <Button Text="Grid Size" Clicked="OnGridSizeClicked"
                     WidthRequest="110" HeightRequest="45"/>
             <Button Text="▶ Test" Clicked="OnTestClicked"
                     WidthRequest="110" HeightRequest="45"
                     BackgroundColor="Green" TextColor="White"/>
-            <Button x:Name="SaveBtn" Text="💾 Save" Clicked="OnSaveClicked"
+            <Button x:Name="SaveBtn"
+                    Text="💾 Save"
+                    Clicked="OnSaveClicked"
                     WidthRequest="110" HeightRequest="45"
                     BackgroundColor="Navy" TextColor="White"
                     IsEnabled="False"/>

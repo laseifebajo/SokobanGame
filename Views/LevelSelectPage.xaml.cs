@@ -37,22 +37,25 @@ namespace SokobanGame.Views
 
             _items = new List<LevelDisplayItem>();
 
-            // Add builtin levls
-            foreach (var level in levelCollection.Levels)
+            // Add builtin levels safely
+            if (levelCollection?.Levels != null)
             {
-                var prog = progress.FirstOrDefault(p => p.LevelId == level.Id);
-                _items.Add(new LevelDisplayItem
+                foreach (var level in levelCollection.Levels)
                 {
-                    Level = level,
-                    Name = level.Name,
-                    IsCompleted = prog?.IsCompleted ?? false,
-                    BestMovesText = prog?.IsCompleted == true
-                        ? $"Best: {prog.BestMoves}" : ""
-                });
+                    var prog = progress.FirstOrDefault(p => p.LevelId == level.Id);
+                    _items.Add(new LevelDisplayItem
+                    {
+                        Level = level,
+                        Name = level.Name,
+                        IsCompleted = prog?.IsCompleted ?? false,
+                        BestMovesText = prog?.IsCompleted == true
+                            ? $"Best: {prog.BestMoves}" : ""
+                    });
+                }
             }
 
-            // Added custom levels with a label so the user knows they made them
-            if (customCollection != null)
+            // Add custom levels safely
+            if (customCollection?.Levels != null)
             {
                 foreach (var level in customCollection.Levels)
                 {
@@ -68,6 +71,8 @@ namespace SokobanGame.Views
                 }
             }
 
+            // Force the CollectionView to refresh with the new list
+            LevelsCollection.ItemsSource = null;
             LevelsCollection.ItemsSource = _items;
         }
 

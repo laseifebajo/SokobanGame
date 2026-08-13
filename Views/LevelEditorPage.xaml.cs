@@ -34,6 +34,8 @@ namespace SokobanGame.Views
             RenderEditorGrid();
         }
 
+        
+
         private void InitEditorGrid()
         {
             // Start every cell as an empty space
@@ -73,25 +75,21 @@ namespace SokobanGame.Views
 
         private View CreateEditorCell(char symbol, int row, int col)
         {
-            // Change the cell colour depending on what is placed there
-            var border = new Border
+            // Show the correct image for the selected cell
+            var image = new Image
             {
-                BackgroundColor = GetCellColour(symbol),
-                Padding = 0,
-                Margin = 1,
-                StrokeShape = new RoundRectangle { CornerRadius = 3 },
-                Stroke = Colors.Gray
+                Source = GetImageSource(symbol),
+                Aspect = Aspect.AspectFill
             };
 
-            // Show the player as an emoji instead of the @ symbol
-            if (symbol == '@')
-                border.Content = new Label
-                {
-                    Text = "🧍",
-                    FontSize = 16,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center
-                };
+            var border = new Border
+            {
+                Content = image,
+                Padding = 0,
+                Margin = 0, // Removed margin to make the tiles sit flush against each other
+                StrokeShape = new Rectangle(), // Changed to flat rectangle for seamless tiles
+                Stroke = Colors.Transparent // Hide the border stroke
+            };
 
             // Let the user tap the cell to place a tool
             var tap = new TapGestureRecognizer();
@@ -102,14 +100,15 @@ namespace SokobanGame.Views
             return border;
         }
 
-        private Color GetCellColour(char symbol) => symbol switch
+        // Map characters to their specific image resource files
+        private string GetImageSource(char symbol) => symbol switch
         {
-            // Each type of object has its own colour
-            '#' => Colors.DarkSlateGray,
-            '$' => Colors.SaddleBrown,
-            '.' => Colors.LightBlue,
-            '*' => Colors.Green,
-            _ => Colors.LightGray
+            '#' => "wall.png",
+            '$' => "box.png",
+            '.' => "target.png",
+            '*' => "box_on_target.png",
+            '@' => "player.png",
+            _ => "ground.png"
         };
 
         private void OnCellTapped(int row, int col)
@@ -133,14 +132,14 @@ namespace SokobanGame.Views
 
         private void ToolSelected(object sender, EventArgs e)
         {
-            // Get the tool from the button that was clicked
-            if (sender is Button btn && btn.CommandParameter is string tool)
+            // Get the tool from the ImageButton that was clicked
+            if (sender is ImageButton btn && btn.CommandParameter is string tool)
                 _selectedTool = tool[0];
         }
 
+        // (OnGridSizeClicked, OnTestClicked, and OnSaveClicked remain exactly the same)
         private async void OnGridSizeClicked(object sender, EventArgs e)
         {
-            // Ask the user what size they want the level to be
             string? result = await DisplayPromptAsync(
                 "Grid Size",
                 "Enter size (e.g. 8x8, max 12x12):",
@@ -150,7 +149,6 @@ namespace SokobanGame.Views
 
             var parts = result.Split('x');
 
-            // Check that the size is between 5x5 and 12x12
             if (parts.Length == 2 &&
                 int.TryParse(parts[0], out int rows) &&
                 int.TryParse(parts[1], out int cols) &&
@@ -160,14 +158,12 @@ namespace SokobanGame.Views
                 _gridRows = rows;
                 _gridCols = cols;
 
-                // Make a new empty grid with the new size
                 _editorGrid = new char[_gridRows, _gridCols];
                 InitEditorGrid();
                 RenderEditorGrid();
             }
             else
             {
-                // Let the user know what size they need to enter
                 await DisplayAlertAsync(
                     "Invalid Size",
                     "Enter something like 8x8 (min 5x5, max 12x12)",
@@ -177,7 +173,6 @@ namespace SokobanGame.Views
 
         private async void OnTestClicked(object sender, EventArgs e)
         {
-            // Check that the level has a player, box and target
             bool hasPlayer = false;
             bool hasBox = false;
             bool hasTarget = false;
@@ -186,38 +181,28 @@ namespace SokobanGame.Views
             {
                 for (int c = 0; c < _gridCols; c++)
                 {
-                    if (_editorGrid[r, c] == '@')
-                        hasPlayer = true;
-
-                    if (_editorGrid[r, c] == '$')
-                        hasBox = true;
-
-                    if (_editorGrid[r, c] == '.')
-                        hasTarget = true;
+                    if (_editorGrid[r, c] == '@') hasPlayer = true;
+                    if (_editorGrid[r, c] == '$') hasBox = true;
+                    if (_editorGrid[r, c] == '.') hasTarget = true;
                 }
             }
 
-            // Don't let the user test a level that is missing something needed
             if (!hasPlayer || !hasBox || !hasTarget)
             {
                 await DisplayAlertAsync(
                     "Invalid Level",
                     "Your level needs at least: one player (@), one box ($), one target (.)",
                     "OK");
-
                 return;
             }
 
-            // Turn the grid into a string so the game can use it
             var rows = new List<string>();
-
             for (int r = 0; r < _gridRows; r++)
             {
                 var row = new string(
                     Enumerable.Range(0, _gridCols)
                         .Select(c => _editorGrid[r, c])
                         .ToArray());
-
                 rows.Add(row);
             }
 
@@ -229,7 +214,6 @@ namespace SokobanGame.Views
                 IsBuiltIn = false
             };
 
-            // Open the normal game page with the level I just created
             var navParam = new Dictionary<string, object>
             {
                 { "Level", testLevel }
@@ -237,69 +221,59 @@ namespace SokobanGame.Views
 
             await Shell.Current.GoToAsync("GamePage", navParam);
 
-            // Once the level has been tested, allow the user to save it
             _hasBeenTested = true;
             SaveBtn.IsEnabled = true;
         }
 
         private async void OnSaveClicked(object sender, EventArgs e)
+{
+    if (!_hasBeenTested)
+    {
+        await DisplayAlert("Test First", "You must test the level before saving.", "OK");
+        return;
+    }
+
+    try
+    {
+        string? name = await DisplayPromptAsync("Save Level", "Enter a name for your level:", initialValue: "My Level");
+
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        var rows = new List<string>();
+        for (int r = 0; r < _gridRows; r++)
         {
-            // Make sure the user has tested the level first
-            if (!_hasBeenTested)
-            {
-                await DisplayAlertAsync(
-                    "Test First",
-                    "You must test the level before saving.",
-                    "OK");
-
-                return;
-            }
-
-            // Ask the user what they want to call their level
-            string? name = await DisplayPromptAsync(
-                "Save Level",
-                "Enter a name for your level:",
-                initialValue: "My Level");
-
-            if (string.IsNullOrWhiteSpace(name))
-                return;
-
-            // Turn the grid into a string before saving it
-            var rows = new List<string>();
-
-            for (int r = 0; r < _gridRows; r++)
-            {
-                var row = new string(
-                    Enumerable.Range(0, _gridCols)
-                        .Select(c => _editorGrid[r, c])
-                        .ToArray());
-
-                rows.Add(row);
-            }
-
-            var newLevel = new SokobanGame.Models.Level
-            {
-                Id = $"custom_{DateTime.Now.Ticks}",
-                Name = name,
-                Grid = string.Join("\n", rows),
-                IsBuiltIn = false
-            };
-
-            // Load the custom levels that have already been saved
-            var existing = await _persistence.LoadCustomLevelsAsync()
-                ?? new SokobanGame.Models.LevelCollection();
-
-            // Add the new level to the list and save it
-            existing.Levels.Add(newLevel);
-            await _persistence.SaveCustomLevelsAsync(existing);
-
-            await DisplayAlertAsync(
-                "Saved!",
-                $"'{name}' has been saved to your custom levels.",
-                "OK");
-
-            // Go back to the previous page
-            await Shell.Current.GoToAsync("..");
+            var row = new string(Enumerable.Range(0, _gridCols).Select(c => _editorGrid[r, c]).ToArray());
+            rows.Add(row);
         }
+
+        var newLevel = new SokobanGame.Models.Level
+        {
+            Id = $"custom_{DateTime.Now.Ticks}",
+            Name = name,
+            Grid = string.Join("\n", rows),
+            IsBuiltIn = false
+        };
+
+        var existing = await _persistence.LoadCustomLevelsAsync() 
+            ?? new SokobanGame.Models.LevelCollection();
+
+        if (existing.Levels == null)
+        {
+            existing.Levels = new List<SokobanGame.Models.Level>();
+        }
+
+        existing.Levels.Add(newLevel);
+        await _persistence.SaveCustomLevelsAsync(existing);
+
+        await DisplayAlert("Saved!", $"'{name}' has been saved to your custom levels.", "OK");
+
+        await Shell.Current.GoToAsync("..");
+    }
+    catch (Exception ex)
+    {
+        await DisplayAlert("Error", ex.Message, "OK");
+    }
+}
     }
 }
